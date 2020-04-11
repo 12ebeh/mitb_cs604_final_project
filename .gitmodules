@@ -1,0 +1,3 @@
+[submodule "server/style_encoder"]
+	path = server/style_encoder
+	url = https://github.com/12ebeh/stylegan-encoder.git
