@@ -1,0 +1,13 @@
+{% block upload_image_widget %}
+<div class='upload_image_wrapper'>
+    <img id="{{ upload_widget_id}}_img" src=''>
+    <form id="{{ upload_widget_id }}_form"  class="upload_image_form" action="upload_image" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <h2>Upload a photo here</h2>
+        <input type='hidden' name="image_id" value="{{ upload_widget_id }}">
+        <input type="file" name="image_file" id="{{ upload_widget_id }}_file">
+        <!--input type="button" value="Upload" onclick="return do_upload_image('{{ upload_widget_id }}')"-->
+        <input type="submit" value="Upload">
+    </form>
+</div>
+{% endblock upload_image_widget %}

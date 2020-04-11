@@ -1,9 +1,20 @@
+<!DOCTYPE html>
 <html>
+    {% load custom_tags %}
+    {% load static %}
     <head>
-
     </head>
     <body>
         <h1>Stylegan Face Blend</h1>
         <p>State of the art face blender</p>
+        
+        {% image_upload_widget upload_widget_id_1 %}
+        {% image_upload_widget upload_widget_id_2 %}
+
+        <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+            integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+            crossorigin="anonymous"></script>
+        <script src="http://malsup.github.com/jquery.form.js"></script> 
+        <script src="{% static 'face/js/main.js' %}"></script>
     </body>
 </html>
