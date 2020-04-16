@@ -10,6 +10,7 @@ def index(request):
         'upload_widget_id_1': 'pic1',
         'upload_widget_id_2': 'pic2'
     }
+
     return render(request, "face/index.html", context)
 
 def upload_image(request):
