@@ -1,5 +1,4 @@
-.vscode/launch.json
-.vscode/settings.json
+.vscode/*
 **/__pycache__
 .venv
 media
