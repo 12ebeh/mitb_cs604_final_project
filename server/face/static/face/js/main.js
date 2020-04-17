@@ -3,6 +3,7 @@ function show_uploaded_image(response) {
     console.log(response)
     imgContainer = response.uploaded_image_id + '_img'
     $('#'+imgContainer).attr('src', response.uploaded_image_url)
+    $('#'+imgContainer).attr('style', 'height: 512px;')
 }
 
 function set_training_status(msg) {
@@ -15,6 +16,9 @@ function update_train_status(response) {
 
 function show_blend_image(response) {
     console.log('blended image')
+    console.log(response)
+    $('#blended_image').attr('src', response.result_url)
+    $('#blended_image').attr('style', 'height: 512px;')
 }
 
 $(document).ready(function() { 

@@ -4,3 +4,4 @@
 server/static
 server/media
 server/db.sqlite3
+server/cache/*

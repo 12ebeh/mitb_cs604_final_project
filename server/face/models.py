@@ -4,7 +4,7 @@ from django.db.models.signals import pre_save
 from django.dispatch import receiver
 
 def generate_upload_path(instance, filename):
-    return 'images/{}/{}'.format(instance.session_id, filename)
+    return 'images/{}/raw/{}'.format(instance.session_id, filename)
 
 # Create your models here.
 class UserImage(models.Model):

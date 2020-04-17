@@ -124,4 +124,4 @@ MEDIA_ROOT =  os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 # StyleGan Module Folder
-STYLEGAN_ROOT = os.path.join(BASE_DIR, 'face')
+STYLEGAN_ROOT = os.path.join(BASE_DIR, 'style_encoder')

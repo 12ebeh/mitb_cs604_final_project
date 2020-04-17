@@ -1,5 +1,7 @@
 import os
 import subprocess
+import hashlib
+import datetime
 from random import randint
 from django.conf import settings
 from django.shortcuts import render
@@ -49,12 +51,22 @@ def train_images(request):
         req_session_id = request.POST.get('session_id')
         print("Train images in session: {}".format(req_session_id))
         
-        # TODO: Call Image extraction script here
-        
+        raw_img_dir = os.path.join(settings.MEDIA_ROOT, 'images', req_session_id, 'raw')
+        aligned_img_dir = os.path.join(settings.MEDIA_ROOT, 'images', req_session_id, 'aligned')
+        generated_img_dir = os.path.join(settings.MEDIA_ROOT, 'images', req_session_id, 'generated')
+        dlatent_dir = os.path.join(settings.MEDIA_ROOT, 'images', req_session_id, 'latent')
+        script = os.path.join(settings.STYLEGAN_ROOT,  'run_latent_extraction.py')
+        print("Raw Img in Dir: {}".format(raw_img_dir))
+        if (os.path.exists(raw_img_dir)):
+            print(os.listdir(raw_img_dir))
+        print("Script: {}".format(script))
+
+        subprocess.run(' '.join(['python', script, raw_img_dir, aligned_img_dir, generated_img_dir, dlatent_dir]), shell=True)
+
         data = {
             'train_success': True,
             'session_id': req_session_id,
-            'training_status': "Images latent representations extracted"
+            'train_status': "Images latent representations extracted" 
         }
         
         return JsonResponse(data)
@@ -63,13 +75,62 @@ def train_images(request):
 def blend_images(request):
     if request.method == 'POST' and request.is_ajax:
         req_session_id = request.POST.get('session_id')
+        blend = float(request.POST.get('blend'))
+        age = float(request.POST.get('age'))
+        gender = float(request.POST.get('gender'))
+        smile = float(request.POST.get('smile'))
         print("Blend images in session: {}".format(req_session_id))
-        
-        subprocess.call(['python', os.path.join(settings.STYLEGAN_ROOT, "test_hello.py")])
-        
-        data = {
+        print("Blend Factor: {}".format(blend))
+        print("Age Factor: {}".format(age))
+        print("Gender Factor: {}".format(gender))
+        print("Smile Factor: {}".format(smile))
+
+        hash = hashlib.sha1()
+        hashstr = datetime.datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + req_session_id
+        hash.update(hashstr.encode('utf-8'))
+        salt = hash.hexdigest()[:10]
+
+        results_dir = os.path.join(settings.MEDIA_ROOT, 'images', req_session_id, 'results')
+        results_link = os.path.join(settings.MEDIA_URL, 'images', req_session_id, 'results')
+        if not os.path.exists(results_dir):
+            os.mkdir(results_dir)
+        result_img = os.path.join(results_dir, 'results{}.jpg'.format(salt))
+        result_url = os.path.join(results_link, 'results{}.jpg'.format(salt))
+
+        dlatent_dir = os.path.join(settings.MEDIA_ROOT, 'images', req_session_id, 'latent')
+        if not os.path.exists(dlatent_dir):
+            data = {
+                'blend_success': False,
+                'session_id': req_session_id
+            }
+            return JsonResponse(data)
+        print("Latent Files:")
+        i = 0
+        char = []
+        for file in os.listdir(dlatent_dir):
+            print(file)
+            latent = os.path.join(dlatent_dir, file)
+            char.append(latent)
+            if i >= 2:
+                break
+
+        blend_param = "--blend_coeff {}".format(blend)
+        age_param = "--age_coeff {}".format(age)
+        gender_param = "--gender_coeff {}".format(gender)
+        smile_param = "--smile_coeff {}".format(smile)
+
+        script = os.path.join(settings.STYLEGAN_ROOT, 'run_generate_image.py')
+        command = ' '.join(['python', script, char[0], char[1], result_img, blend_param, age_param, gender_param, smile_param])
+        print(command)
+        print(result_url)
+
+        subprocess.run(command, shell=True)
+
+         data = {
             'blend_success': True,
-            'session_id': req_session_id
-        }
+            'session_id': req_session_id,
+            'result_url': result_url
+         }
+
+         return JsonResponse(data)
         
-        return JsonResponse(data)
