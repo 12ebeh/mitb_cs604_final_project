@@ -126,11 +126,11 @@ def blend_images(request):
 
         subprocess.run(command, shell=True)
 
-         data = {
+        data = {
             'blend_success': True,
             'session_id': req_session_id,
             'result_url': result_url
-         }
+        }
 
-         return JsonResponse(data)
+        return JsonResponse(data)
         
