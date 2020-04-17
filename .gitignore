@@ -3,3 +3,4 @@
 .venv
 server/static
 server/media
+server/db.sqlite3
