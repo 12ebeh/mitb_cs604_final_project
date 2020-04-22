@@ -7,7 +7,7 @@
         <input type='hidden' name="image_id" value="{{ upload_widget_id }}">
         <input type='hidden' name="session_id" value="{{ session_id }}">
         <input type="file" name="image_file" id="{{ upload_widget_id }}_file">
-        <input type="submit" value="Upload">
+	<input id="image_upload_submit_{{ upload_widget_id }}" type="submit" value="Upload">
     </form>
 </div>
 {% endblock upload_image_widget %}
