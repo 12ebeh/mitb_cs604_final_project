@@ -10,7 +10,7 @@ from .models import UserImage
 from .forms import UserImageForm
 
 used_session_id = []
-
+session_subprocesses = {}
 
 def create_session_id():
     new_rand = randint(0, 65534)
@@ -49,28 +49,54 @@ def upload_image(request):
 def train_images(request):
     if request.method == 'POST' and request.is_ajax:
         req_session_id = request.POST.get('session_id')
-        print("Train images in session: {}".format(req_session_id))
-        
-        raw_img_dir = os.path.join(settings.MEDIA_ROOT, 'images', req_session_id, 'raw')
-        aligned_img_dir = os.path.join(settings.MEDIA_ROOT, 'images', req_session_id, 'aligned')
-        generated_img_dir = os.path.join(settings.MEDIA_ROOT, 'images', req_session_id, 'generated')
-        dlatent_dir = os.path.join(settings.MEDIA_ROOT, 'images', req_session_id, 'latent')
-        script = os.path.join(settings.STYLEGAN_ROOT,  'run_latent_extraction.py')
-        print("Raw Img in Dir: {}".format(raw_img_dir))
-        if (os.path.exists(raw_img_dir)):
-            print(os.listdir(raw_img_dir))
-        print("Script: {}".format(script))
-
-        subprocess.run(' '.join(['python', script, raw_img_dir, aligned_img_dir, generated_img_dir, dlatent_dir]), shell=True)
 
         data = {
-            'train_success': True,
-            'session_id': req_session_id,
-            'train_status': "Images latent representations extracted" 
+            'train_state': 0,
+            'session_id': req_session_id
+        }
+
+        if (req_session_id not in session_subprocesses):
+            print("Start new Train subprocess for session: {}".format(req_session_id))
+        
+            raw_img_dir = os.path.join(settings.MEDIA_ROOT, 'images', req_session_id, 'raw')
+            aligned_img_dir = os.path.join(settings.MEDIA_ROOT, 'images', req_session_id, 'aligned')
+            generated_img_dir = os.path.join(settings.MEDIA_ROOT, 'images', req_session_id, 'generated')
+            dlatent_dir = os.path.join(settings.MEDIA_ROOT, 'images', req_session_id, 'latent')
+            script = os.path.join(settings.STYLEGAN_ROOT,  'run_latent_extraction.py')
+            print("Raw Img in Dir: {}".format(raw_img_dir))
+            if (os.path.exists(raw_img_dir)):
+                print(os.listdir(raw_img_dir))
+            print("Script: {}".format(script))
+
+            p = subprocess.Popen(['python', script, raw_img_dir, aligned_img_dir, generated_img_dir, dlatent_dir])
+            session_subprocesses[req_session_id] = p
+            data['train_stat'] = 1
+
+        return JsonResponse(data)
+
+
+def poll_training(request):
+    if request.method == 'POST' and request.is_ajax:
+        req_session_id = request.POST.get('session_id')
+
+        data = {
+            'train_state': 0,
+            'session_id': req_session_id
         }
         
+        if (req_session_id in session_subprocesses):
+            ret = session_subprocesses[req_session_id].poll()
+            if ret is None:
+                data['train_state'] = 1
+            elif ret == 0:
+                data['train_state'] = 2
+                del session_subprocesses[req_session_id]
+            else:
+                data['train_state'] = -1
+                del session_subprocesses[req_session_id]
+
         return JsonResponse(data)
-        
+
 
 def blend_images(request):
     if request.method == 'POST' and request.is_ajax:
